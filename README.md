@@ -10,6 +10,7 @@
 
 #### Encryption-app
 Self contained AES text encryption app using password
+Made for fun by request from a friend and shouldn't be used for anything serious.
 
 ##### Screenshot
 ![image](https://user-images.githubusercontent.com/63219005/125106084-83e3b800-e0df-11eb-8252-1bf46fc43ada.png)
