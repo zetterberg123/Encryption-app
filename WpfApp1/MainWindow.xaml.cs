@@ -12,82 +12,101 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Aes CreateCipher()
-        {
-            Aes cipher = Aes.Create();
-
-            cipher.Padding = PaddingMode.ISO10126;
-
-            byte[] passwordBytes = Encoding.UTF8.GetBytes(PasswordText.Text);
-            byte[] aesKey = SHA256Managed.Create().ComputeHash(passwordBytes);
-            cipher.Key = aesKey;
-
-            cipher.GenerateIV();
-
-            Trace.WriteLine("Key: " + Convert.ToBase64String(aesKey) + " IV: " + Convert.ToBase64String(cipher.IV));
-
-            return cipher;
-        }
-
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        private void EncryptButton_Click(object sender, RoutedEventArgs e)
+        // Create Cipher for encrypting and decrypting
+        private Aes CreateCipher()
+        {
+            Aes cipher = Aes.Create();
+
+            // The ISO10126 padding string consists of random data before the length.
+            cipher.Padding = PaddingMode.ISO10126;
+
+            // Key has to be 32-bit so use Hash of password
+            byte[] passwordBytes = Encoding.UTF8.GetBytes(PasswordText.Text);
+            byte[] aesKey = SHA256Managed.Create().ComputeHash(passwordBytes);
+            cipher.Key = aesKey;
+
+            // Generate IV 
+            cipher.GenerateIV();
+
+            // Debug
+            Trace.WriteLine("Key: " + Convert.ToBase64String(aesKey) + " IV: " + Convert.ToBase64String(cipher.IV));
+
+            return cipher;
+        }
+
+        // Show error if no text is entered
+        private bool IsTextEmpty()
         {
             if (InputText.Text == "")
             {
                 OutputText.Text = "No input text!";
-                return;
+                return true;
             }
+            else return false;
+        }
+
+        // Encrypt
+        private void EncryptButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (IsTextEmpty()) return;
 
             try
             {
+                // Get cipher
                 Aes cipher = CreateCipher();
 
+                // Create encryption
                 ICryptoTransform cryptotransform = cipher.CreateEncryptor(cipher.Key, cipher.IV);
                 byte[] plaintext = Encoding.UTF8.GetBytes(InputText.Text);
                 byte[] ciphertext = cryptotransform.TransformFinalBlock(plaintext, 0, plaintext.Length);
 
+                // Append IV to encrypted cipher text to use when decrypting
                 byte[] encryptedBytesAndIV = new byte[ciphertext.Length + cipher.IV.Length];
                 cipher.IV.CopyTo(encryptedBytesAndIV, 0);
                 ciphertext.CopyTo(encryptedBytesAndIV, cipher.IV.Length);
 
+                // Show encrypted message
                 OutputText.Text = Convert.ToBase64String(encryptedBytesAndIV);
             }
-            catch (Exception ex)
+            catch (Exception ex) // Error handling
             {
                 OutputText.Text = "<<< ERROR! catch : " + ex.ToString();
             }
         }
 
+        // Decrypt
         private void DecryptButton_Click(object sender, RoutedEventArgs e)
         {
-            if (InputText.Text == "")
-            {
-                OutputText.Text = "No input text!";
-                return;
-            }
+            if (IsTextEmpty()) return;
 
             try
             {
+                // Get cipher
                 Aes cipher = CreateCipher();
                 
-                byte[] plaintext = Convert.FromBase64String(InputText.Text);
+                // Convert text from Base64 to array
+                byte[] inputText = Convert.FromBase64String(InputText.Text);
 
+                // Extract text and IV from string
                 var iv = new byte[16];
-                Array.Copy(plaintext, 0, iv, 0, iv.Length);
+                Array.Copy(inputText, 0, iv, 0, iv.Length);
 
-                byte[] decryptText = new byte[plaintext.Length - 16];
-                Buffer.BlockCopy(plaintext, 16, decryptText, 0, decryptText.Length);
+                byte[] decryptText = new byte[inputText.Length - 16];
+                Buffer.BlockCopy(inputText, 16, decryptText, 0, decryptText.Length);
 
+                // Create decryption
                 ICryptoTransform cryptoTransform = cipher.CreateDecryptor(cipher.Key, iv);
                 byte[] cipherText = cryptoTransform.TransformFinalBlock(decryptText, 0, decryptText.Length);
 
+                // Show decrypted message
                 OutputText.Text = Encoding.UTF8.GetString(cipherText);
             }
-            catch (Exception ex)
+            catch (Exception ex) // Error handling
             {
                 if (ex is CryptographicException)
                 {
@@ -102,28 +121,32 @@ namespace WpfApp1
             }
         }
 
+        // Drag window
         private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
         {
             this.DragMove();
         }
 
+        // Close program
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
         }
 
+        // Copy text
         private void CopyTextButton_Click(object sender, RoutedEventArgs e)
         {
             Clipboard.SetText(OutputText.Text);
         }
 
+        // Paste text
         private void PasteTextButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 InputText.Text = Clipboard.GetText();
             }
-            catch (Exception ex)
+            catch (Exception ex) // Error handling
             {
                 OutputText.Text = "<<< ERROR! catch : " + ex.ToString();
             }
