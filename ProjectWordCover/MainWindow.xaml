@@ -1,9 +1,9 @@
-﻿<Window x:Class="WpfApp1.MainWindow"
+﻿<Window x:Class="ProjectWordCover.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WpfApp1"
+        xmlns:local="clr-namespace:ProjectWordCover"
         mc:Ignorable="d"
         Height="400" Width="800" ResizeMode="NoResize" WindowStyle="None" Background="Transparent" AllowsTransparency="True" Title="Project word cover" Icon="icon.ico">
     <Border Background="#FF2F3136" CornerRadius="10">
@@ -17,7 +17,7 @@
                 <RowDefinition/>
                 <RowDefinition Height="100"/>
             </Grid.RowDefinitions>
-            <Border x:Name="TitleBar" Grid.ColumnSpan="2" CornerRadius="0,0,10,10" Background="#FF202225" Margin="25,0,25,0" MouseDown="TitleBar_MouseDown">
+            <Border x:Name="TitleBar" Grid.ColumnSpan="2" CornerRadius="0,0,10,10" Background="#FF202225" Margin="25,0,25,0" MouseLeftButtonDown="TitleBar_MouseDown">
                 <Grid>
                     <TextBlock Text="Project word cover"
                         VerticalAlignment="Center"

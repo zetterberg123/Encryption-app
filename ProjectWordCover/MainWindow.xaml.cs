@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
-using System.Security.Cryptography;
-using System.Diagnostics;
 
-namespace WpfApp1
+namespace ProjectWordCover
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -25,9 +25,9 @@ namespace WpfApp1
             // The ISO10126 padding string consists of random data before the length.
             cipher.Padding = PaddingMode.ISO10126;
 
-            // Key has to be 32-bit so use Hash of password
+            // Key has to be 256 bits so use Hash of password
             byte[] passwordBytes = Encoding.UTF8.GetBytes(PasswordText.Text);
-            byte[] aesKey = SHA256Managed.Create().ComputeHash(passwordBytes);
+            byte[] aesKey = SHA256.HashData(passwordBytes);
             cipher.Key = aesKey;
 
             // Generate IV 
@@ -88,7 +88,7 @@ namespace WpfApp1
             {
                 // Get cipher
                 Aes cipher = CreateCipher();
-                
+
                 // Convert text from Base64 to array
                 byte[] inputText = Convert.FromBase64String(InputText.Text);
 
@@ -113,7 +113,8 @@ namespace WpfApp1
                     OutputText.Text = "Invalid password!";
                     return;
                 }
-                else if (ex is ArgumentException || ex is FormatException) {
+                else if (ex is ArgumentException || ex is FormatException)
+                {
                     OutputText.Text = "Invalid input! \nInput must be Base64 do decrypt";
                     return;
                 }
@@ -124,13 +125,13 @@ namespace WpfApp1
         // Drag window
         private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            this.DragMove();
+            DragMove();
         }
 
         // Close program
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            Close();
         }
 
         // Copy text
